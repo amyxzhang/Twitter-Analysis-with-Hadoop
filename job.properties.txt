@@ -1,0 +1,13 @@
+keywords=sleep
+locations=1,2
+years=2011
+months=n
+days-of-the-month=n
+days-of-the-week=all*
+weekday=n
+date-range=n
+time-range=n
+date-time-range=n
+time-increment=n
+average-over=d
+

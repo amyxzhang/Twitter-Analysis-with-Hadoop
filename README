@@ -1,0 +1,315 @@
+README
+
+written by Amy X. Zhang
+http://amyxzhang.wordpress.com
+For undergraduate thesis at Rutgers University, May 2011.
+
+I wrote this program to be used with our (Rutgers Social Media Lab) Twitter dataset of 58 cities.
+Tweets were simply text files seperated by city, year, and month. 
+Format of a line of data: 
+tweetid, content, yyyy-mm-dd hh:mm:ss
+
+Requires hadoop installation
+
+----------------
+
+This is a script for use with Hadoop that counts the occurrence of tweets in a Twitter dataset subject to several filters, such as the presence of one or more terms, location, and time of tweet.
+
+Some questions that could be answered with this script:
+
+Do people tweet the word "boring" more on Monday or Friday in Sacramento?
+How many times did people tweet words related to sleeping ("sleep","gnight","night") at 10pm in 2011 versus 2010? At midnight?
+What locations (out of the 58 cities in our dataset) tweet "football" the most?
+Do people in New York tweet "Giants" or "Jets" more? How does this change, year to year? Month to month? Weekend vs weekday?
+From April 4th 2010- June 3rd 2011, how many people tweeted "Obama"?
+From 10PM to 2AM, how many people tweet "homework" in LA?
+What's the average number of tweets per week in Austin for the year of 2010?
+
+This can also be used to generate time-series data.
+
+
+------------------------------------------
+
+FILTERING
+
+First, fill out job.properties.txt with the filters you are interested in. These are the possible filters, their possible values, and the format they should be in:
+
+KEYWORD
+keywords you would like to search for
+
+ex:
+keywords=sleep,yawn,night,gnight < ---- comma works as OR, i.e. this will
+return all tweets containing sleep or yawn or night or gnight
+keywords=election
+
+
+LOCATION
+locations by their locid
+
+locations=1,2,6
+locations=all*    <--- This is the same as 1*,2*,3*,4*,...
+
+YEARS
+specific years you are looking at
+
+years=2009,2010
+
+
+MONTHS
+months starting at 01 up to 12
+
+months=09,04,10
+months=all*   <----same as 01*,02*,03*,04*....
+
+
+DAYS OF THE MONTH
+specific days of the month you want, from 01 to 31
+
+days-of-the-month=01,08,15,22,29
+days-of-the-month=all*    <---same as 01*,02*,03*,04*....
+
+
+DAYS OF THE WEEK
+days of the week, with Monday = 0 and Sunday = 6
+
+days-of-the-week=01,02,03
+days-of-the-week=all*       <----same as 01*,02*,03*,04*....
+
+
+WEEKDAY
+if you want to filter by weekday or weekend
+
+weekday=yes
+I want only weekdays
+
+weekday=no
+I want only weekends
+
+weekday=yes*,no*
+I want both weekdays and weekends
+
+
+DATE RANGE
+get the tweets between specific dates
+inclusive
+
+date format is YYYY-MM-DD
+
+ex:
+date-range:2010-04-04,2010-04-20
+
+
+TIME RANGE
+get the tweets between specific times
+inclusive
+military time
+
+time format is HH:MM:SS
+
+ex:
+time-range:12:00:00,14:00:00
+
+
+DATE TIME RANGE
+get the tweets between a specific time on a specific date to another time on another date
+inclusive
+military time
+
+ex:
+date-time-range=2010-05-12,04:30:00,2010-05-13,05:30:00
+
+
+TIME INCREMENT
+If you wish for your results to be displayed in specific time increments:
+every minute, hour, day, month, or year
+
+examples:
+
+time-increment=mi
+time-increment=h
+time-increment=d
+time-increment=mo
+time-increment=y
+time-increment=n
+
+TO BE IMPLEMENTED: 30mi, 20mi, 10mi etc
+
+
+AVERAGE OVER - (in need of debugging)
+IF you want your  results to be averaged over the number of minutes,
+hours, days, months, or years
+
+examples:
+
+average-over=mi
+average-over=h
+average-over=d
+average-over=mo
+average-over=y
+average-over=n
+
+
+
+
+
+
+-------------------------------
+
+GREATER DEPTH ANALYSIS
+
+After choosing how to filter the data, you may choose to illuminate certain filter subjects using an *
+
+For example, if I have currently:
+
+keywords=sad,depressed,unhappy
+
+I am filtering out all the tweets that contain "sad", "depressed", or "unhappy".
+
+If I want to know specifically how many tweets contain "sad," then I would do:
+
+keywords=sad*,depressed,unhappy
+
+This would give me how many tweets contain "the" specifically, in one count, and then how many tweets contain "of" or "is" in another count. Thus, the amount of tweets with "the" has been illuminated from the results.
+
+-------------------------------
+
+EXAMPLE
+Here is an example of a complete job.properties.txt:
+
+keywords=the*,of,is
+locations=1*,2*,4,9
+years=2009*,2010*
+months=09*,04,05*
+days-of-the-month=n
+days-of-the-week=01*
+weekday=yes*,no
+date-range=2010-04-04,2010-04-20*
+time-range=15:00:00,20:00:00*
+date-time-range=n
+
+----------------------------------
+
+Notice you may put 'n' as a parameter for a filter if you do not wish to filter for it. You may also exclude the line entirely.
+
+----------------------------------
+
+Running this on the data file set of 9-2010-04, we get the following results:
+
+
+        0       374871
+ keyword=the year=2010  0       179118
+ keyword=the year=2010 dayOfTheWeek=01 weekday=yes dateRange=2010-04-04 2010-04-20      0       21930
+ keyword=the year=2010 dayOfTheWeek=01 weekday=yes dateRange=2010-04-04 2010-04-20 timeRange=15:00:00 20:00:00  7233 7233
+ year=2010      0       141006
+ year=2010 dayOfTheWeek=01 weekday=yes dateRange=2010-04-04 2010-04-20  0       17785
+ year=2010 dayOfTheWeek=01 weekday=yes dateRange=2010-04-04 2010-04-20 timeRange=15:00:00 20:00:00      5485    5485
+not a line of data  1       1
+
+-------------------------------------
+
+A few notes on the format of the results-
+
+The last line may be ignored (the first line of every data file contains headers for each column of data and is not a line of data)
+
+Each line is a "bucket" of data. The first number tells you how many of the tweets in that bucket passed the filter. The second number is the total number of tweets in the bucket. The attributes that come before the numbers are the attributes of the tweets in that bucket. These attributes coincide with the parameters you chose to illuminate with a * in job.properties.txt.
+
+---------------------------------------
+
+To explain each line further:
+
+        0       374871
+374871 tweets did not share any of the attributes you wanted illuminated and also did not pass the filter.
+
+
+ keyword=the year=2010  0       179118
+
+179118 tweets contained "the" and were in 2010 but otherwise did not pass the filter.
+
+
+
+ keyword=the year=2010 dayOfTheWeek=01 weekday=yes dateRange=2010-04-04 2010-04-20      0       21930
+
+Likewise 21930 tweets had all of these attributes but did not pass the filter.
+
+
+
+ keyword=the year=2010 dayOfTheWeek=01 weekday=yes dateRange=2010-04-04 2010-04-20 timeRange=15:00:00 20:00:00  7233 7233
+
+7233 tweets had all these attributes and did pass the filter.
+
+
+
+ year=2010      0       141006
+
+141006 tweets were in 2010, shared no other attributes you wished to be illuminated, and did not pass the filter.
+
+
+
+ year=2010 dayOfTheWeek=01 weekday=yes dateRange=2010-04-04 2010-04-20  0       17785
+
+Likewise 17785 tweets had all of these attributes but did not pass the filter.
+
+
+
+ year=2010 dayOfTheWeek=01 weekday=yes dateRange=2010-04-04 2010-04-20 timeRange=15:00:00 20:00:00      5485    5485
+ 
+5485 tweets had these attributes and passed the filter. Notice the difference between these and the other line of tweets that passed the filter. These are the tweets that do not contain "the" but still passed the filter. Thus they must contain "of" or "is".
+
+-------------------------------------
+
+
+If job.properties.txt were altered so that all the *s are removed, this would be the result of running the program:
+
+        12718   747428
+
+
+Indeed, from our previous analysis, 5485 + 7233 = 12718, the total number of tweets that pass the filter. This is an example of a basic search and how using * can illuminate some aspects of the results. It may be most useful to first do a basic filter of what you are looking for without *s and then add in *s incrementally to bring out certain characteristics of the tweets that passed the filter.
+
+
+---------------------------------------
+
+NOTICE - currently, running the script only searches through 1 data file for
+testing purposes. A data file consists of tweets from one location and month.
+As of now, the data file in use is 9-2010-04, 9 corresponds to the location
+code (visit http://sm.rutgers.edu/crawler/list_loc.php for the location
+codes), 2010 is the year, and 04 is the month. 
+
+
+To run this program, type:
+
+python runJob.py
+
+
+
+----------------------------------------
+
+One more example:
+
+Do people say the word boring more on Monday or Friday in Sacramento?
+
+job.properties.txt:
+
+
+keywords=boring
+locations=9
+years=n
+months=n
+days-of-the-month=n
+days-of-the-week=0*,4*
+weekday=n
+date-range=n
+time-range=n
+date-time-range=n
+
+Results: (ran only data file: 9-2010-04)
+
+
+       0       747251
+ dayOfTheWeek=0 99      99
+ dayOfTheWeek=4 78      78
+not a line of data      1       1
+
+
+747251 tweets did not pass the filter. 99 tweets were on Monday and contained
+the word boring. 78 tweets were on Friday and contained the word boring.
+Answer: Monday
