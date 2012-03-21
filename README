@@ -268,18 +268,12 @@ Indeed, from our previous analysis, 5485 + 7233 = 12718, the total number of twe
 
 ---------------------------------------
 
-NOTICE - currently, running the script only searches through 1 data file for
-testing purposes. A data file consists of tweets from one location and month.
-As of now, the data file in use is 9-2010-04, 9 corresponds to the location
-code (visit http://sm.rutgers.edu/crawler/list_loc.php for the location
-codes), 2010 is the year, and 04 is the month. 
-
-
 To run this program, type:
 
 python runJob.py
 
 
+Currently, runJob is set to be searching through a single datafile 9-2010-04. Replace this with your dataset, keeping in mind the data format.
 
 ----------------------------------------
 
